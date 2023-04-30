@@ -174,6 +174,17 @@ client.on('ready', async () => {
 
 let lastTokens = 0
 
+function splitStringIntoChunks(str, chunkSize) {
+    const chunks = [];
+  
+    for (let i = 0; i < str.length; i += chunkSize) {
+        const chunk = str.substring(i, chunkSize * (i + 1));
+        chunks.push(chunk);
+    }
+  
+    return chunks;
+}
+
 client.on("messageCreate", async message => {    
     if (message.channel.type == "DM" && message.author.id != client.user.id) {
         message.channel.sendTyping()
@@ -293,7 +304,9 @@ client.on("messageCreate", async message => {
 
             conversation.push({ role: "assistant", content: reply.content })
 
-            message.channel.send(reply)
+            for (let chunk of splitStringIntoChunks(reply.content, 2000)) {
+                await message.channel.send(chunk)
+            }
 
             lastTokens = completion.data.usage.total_tokens
 
